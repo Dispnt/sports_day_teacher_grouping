@@ -32,7 +32,7 @@ def vote():
                 # 检查队伍是否已满
                 team_size = VotingRecords.query.filter_by(team=team).count()
                 if team_size >= 5:
-                    return '当前队伍已满，无法再投票。', 402
+                    return 402
                 existing_vote.team = team
                 db.session.commit()
                 return jsonify({'selectorupdate': '更新了队伍，现在是'})
@@ -40,16 +40,16 @@ def vote():
                 # 检查队伍是否已满
                 team_size = VotingRecords.query.filter_by(team=team).count()
                 if team_size >= 40:
-                    return '当前队伍已满，无法再投票。', 402
+                    return 402
                 new_vote = VotingRecords(teacher_name=name, team=team)
                 db.session.add(new_vote)
                 db.session.commit()
                 return jsonify({'selectorupdate': '选择了'})
         else:
-            return '姓名不能为空', 401
+            return 401
     except Exception as e:
         print(e)
-        return 'bad request!', 400
+        return 400
 
 # 获取投票进度接口路由
 @app.route('/vote/status', methods=['GET'])
