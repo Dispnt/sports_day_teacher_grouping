@@ -67,8 +67,8 @@
                 return response.json();
             })
             .then(data => {
-                const bluePercentage = (data.blue / 5) * 100;
-                const redPercentage = (data.red / 5) * 100;
+                const bluePercentage = (data.blue / 40) * 100;
+                const redPercentage = (data.red / 40) * 100;
 
                 // 更新蓝队进度条
                 document.getElementById('progressBlue').style.width = bluePercentage + '%';

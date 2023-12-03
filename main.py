@@ -39,7 +39,7 @@ def vote():
             else: # 如果不存在
                 # 检查队伍是否已满
                 team_size = VotingRecords.query.filter_by(team=team).count()
-                if team_size >= 5:
+                if team_size >= 40:
                     return '当前队伍已满，无法再投票。', 402
                 new_vote = VotingRecords(teacher_name=name, team=team)
                 db.session.add(new_vote)
