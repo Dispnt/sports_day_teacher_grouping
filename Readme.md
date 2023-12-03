@@ -16,6 +16,9 @@
     ```bash
     source ./sql.sql
     ```
+4. 修改人数，人名，mysql连接地址：
+    `./template/index.html`内：70，71，75，78行
+    `./main.py`内：7，34，42行
 
 ## 运行
 

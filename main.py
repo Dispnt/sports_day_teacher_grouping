@@ -31,7 +31,7 @@ def vote():
             if existing_vote: # 如果存在
                 # 检查队伍是否已满
                 team_size = VotingRecords.query.filter_by(team=team).count()
-                if team_size >= 5:
+                if team_size >= 40:
                     return 402
                 existing_vote.team = team
                 db.session.commit()
