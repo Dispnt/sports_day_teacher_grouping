@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>教工运动会分队投票</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link href="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap/5.1.3/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>教工运动会分队投票</h2>
+
+    <!-- 用户输入姓名表单 -->
+    <div class="form-group">
+        <label for="inputName">请输入您的姓名：</label>
+        <input type="text" class="form-control" id="inputName" placeholder="姓名">
+    </div>
+
+    <!-- 投票按钮 -->
+    <div class="btn-group btn-group-lg" role="group" aria-label="Vote Buttons" style="margin-top: 20px;">
+        <button type="button" class="btn btn-primary" id="btnBlue">投票蓝队</button>
+        <button type="button" class="btn btn-danger" id="btnRed">投票红队</button>
+    </div>
+
+    <!-- 进度条显示 -->
+    <div class="progress-container">
+        <p>蓝队投票进度：</p>
+        <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" id="progressBlue"></div>
+        </div>
+    </div>
+    <div class="progress-container">
+        <p>红队投票进度：</p>
+        <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" id="progressRed"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 引入 Bootstrap JS 和 Popper.js -->
+<script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.3.1/jquery.slim.min.js" type="application/javascript"></script>
+<script src="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/popper.js/1.14.7/esm/popper.min.js" type="application/javascript"></script>
+<script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap/5.1.3/js/bootstrap.min.js" type="application/javascript"></script>
+
+<!-- 自定义脚本 -->
+<script>
+    // 获取人数的接口地址
+
+    // 更新投票进度
+    function updateProgress() {
+        fetch('http://localhost:5000/vote/status')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const bluePercentage = (data.blue / 5) * 100;
+                const redPercentage = (data.red / 5) * 100;
+
+                // 更新蓝队进度条
+                document.getElementById('progressBlue').style.width = bluePercentage + '%';
+                document.getElementById('progressBlue').textContent = data.blue + "人\\40人"
+                // 更新红队进度条
+                document.getElementById('progressRed').style.width = redPercentage + '%';
+                document.getElementById('progressRed').textContent = data.red + "人\\40人"
+                console.log(data)
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+            });
+    }
+
+    // 点击投票按钮时的处理
+    document.getElementById('btnBlue').addEventListener('click', function () {
+        vote('blue');
+    });
+    document.getElementById('btnRed').addEventListener('click', function () {
+        vote('red');
+    });
+
+    // 模拟投票请求
+    function vote(team) {
+        const name = document.getElementById('inputName').value;
+        const validNames = ['张伟', '李四', '小五'];
+        if (!validNames.includes(name)) {
+        alert('请输入合法的姓名');
+        return; 
+        }   
+        fetch('http://localhost:5000/vote', {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: name,
+                team: team,
+            }),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    if(response.status==402){
+                        throw new Error(`当前选择队伍已满！`);
+                    }
+                    else if(response.status==402){
+                        throw new Error(`姓名不能为空`);
+                    }
+                    else{
+                        throw new Error(`网络${response.status}错误`);
+                    }
+                    
+                }
+                return response.json();
+            })
+            .then(data => {
+                if(team=="red"){
+                    teamAlert = '红'
+                }
+                else{teamAlert = '蓝'}
+                alert(`投票成功！您${data.selectorupdate}${teamAlert}队。`);
+                // 投票成功后刷新投票进度
+                updateProgress();
+            })
+            .catch(error => {
+                alert(`${error},投票失败。`);
+            });
+    }
+
+    // 页面加载时初始化投票进度
+    document.addEventListener('DOMContentLoaded', function () {
+        updateProgress();
+    });
+    setInterval(updateProgress, 2000)
+</script>
+</body>
+</html>
