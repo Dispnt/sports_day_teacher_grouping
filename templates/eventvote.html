@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>教工运动会项目投票</title>
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="inputName">输入姓名:</label>
+                    <input type="text" class="form-control" id="inputName" placeholder="姓名">
+                </div>
+                <button class="btn btn-primary" id="btnConfirm" onclick="checkTeam()">确定</button>
+            </div>
+        </div>
+
+        <div class="row s" id="votingSection" style="display: none;">
+            <div class="col-md-6">
+                <h5 id="teamDisplay" class="text-center"></h5>
+                <h4>你参加的项目有：</br><span id="enrolledProjectsBadges"></span></h4>
+
+                <h5>选择你要参加或退出的项目:</h5>
+                <!-- Solid Ball -->
+                <div class="mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">实心球</h5>
+                            <button class="btn btn-success" onclick="voteProject('SolidBall')">退出/参加</button>
+                            <div class="progress" style="height: 30px;margin-top: 20px;">
+                                <div id="progressSolidBall" class="progress-bar" role="progressbar" style="width: 0%;"
+                                    aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+                <!-- Basketball -->
+
+                <div class="mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">篮球</h5>
+                            <button class="btn btn-info" onclick="voteProject('Basketball')">退出/参加</button>
+                            <div class="progress" style="height: 30px;margin-top: 20px ;">
+                                <div id="progressBasketball" class="progress-bar" role="progressbar" style="width: 0%;"
+                                    aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Badminton -->.
+
+                <div class="mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">羽毛球</h5>
+                            <button class="btn btn-warning" onclick="voteProject('Badminton')">退出/参加</button>
+                            <div class="progress" style="height: 30px;margin-top: 20px ;">
+                                <div id="progressBadminton" class="progress-bar" role="progressbar" style="width: 0%;"
+                                    aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Jump Rope -->
+                <div class="mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">跳绳</h5>
+                            <button class="btn btn-danger" onclick="voteProject('JumpRope')">退出/参加</button>
+                            <div class="progress" style="height: 30px;margin-top: 20px ;">
+                                <div id="progressJumpRope" class="progress-bar" role="progressbar" style="width: 0%;"
+                                    aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const englishToChineseMap = {
+            'SolidBall': '实心球',
+            'Basketball': '篮球',
+            'Badminton': '羽毛球',
+            'JumpRope': '跳绳',
+            'Blue': '蓝',
+            'Red': '红'
+        };
+
+        // 根据英文项目名称返回中文名称
+        function translateToChinese(englishName) {
+            return englishToChineseMap[englishName] || englishName;
+        }
+
+        function determineTeam(name) {
+            const NamesBlue = ['A', 'B', 'C'];
+            const NamesRed = ['D', 'E', 'F', 'H', 'G', 'I'];
+            if (NamesBlue.includes(name)) {
+                return 'Blue';
+            } else if (NamesRed.includes(name)) {
+                return 'Red';
+            }
+            return 'Unknown';
+        }
+        
+        function checkTeam() {
+            const name = document.getElementById('inputName').value;
+
+            if (determineTeam(name) == "Unknown") {
+                alert('姓名无效');
+            }
+            else {
+                document.getElementById('inputName').disabled = true;
+                document.getElementById('btnConfirm').style.display = "none";
+                displayTeam(determineTeam(name));
+            }
+        }
+
+        function displayTeam(team) {
+            document.getElementById('teamDisplay').innerText = `你好， ${document.getElementById('inputName').value}老师! 你先前抽中了${translateToChinese(team)}队`;
+            document.getElementById('votingSection').style.display = 'block';
+            update_data()
+            setInterval(update_data, 2000)
+        }
+
+        function update_data() {
+            team = determineTeam(document.getElementById('inputName').value)
+            updateProgressBar("SolidBall", team)
+            updateProgressBar("Basketball", team)
+            updateProgressBar("Badminton", team)
+            updateProgressBar("JumpRope", team)
+            getEnrolledProjects()
+            console.log("updated")
+        }
+
+        function voteProject(project) {
+            const name = document.getElementById('inputName').value;
+            const team = determineTeam(name);
+
+            fetch(`/vote/project`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name,
+                    project: project,
+                    team: team,
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);  // 显示成功的消息
+                        updateProgressBar(project, team);  // 更新进度条
+                    } else {
+                        alert(data.message);  // 显示错误消息
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    alert('Failed to vote. Please try again.');
+                });
+        }
+
+        function updateProgressBar(project, team) {
+            // Fetch the current count for the selected project and team
+            fetch(`/project/team/count?project=${project}&team=${team}`)
+                .then(response => response.json())
+                .then(data => {
+                    const progressBar = document.getElementById(`progress${project}`);
+                    const maxCount = 5; // Replace with the maximum number of participants for each project
+                    const percentage = (data.count / maxCount) * 100;
+                    progressBar.style.width = `${percentage}%`;
+                    progressBar.textContent = data.count + "人\\5人"
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    alert('Failed to update progress bar. Please try again.');
+                });
+        }
+
+
+
+        function getEnrolledProjects() {
+            const name = document.getElementById('inputName').value;
+            const team = determineTeam(name);
+
+            fetch(`/project/enrolled?name=${name}&team=${team}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const projectsList = data.projects;
+                        displayEnrolledProjects(projectsList);
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    alert('Failed to fetch enrolled projects. Please try again.');
+                });
+        }
+
+        function displayEnrolledProjects(projectsList) {
+            // Clear existing badges
+            const badgesContainer = document.getElementById('enrolledProjectsBadges');
+            badgesContainer.innerHTML = '';
+
+            // Display badges for enrolled projects
+            projectsList.forEach(project => {
+                const badge = document.createElement('span');
+                badge.className = 'badge badge-success mr-2';
+                badge.innerText = translateToChinese(project.project);
+                badgesContainer.appendChild(badge);
+            });
+        }
+
+    </script>
+
+</body>
+
+</html>
