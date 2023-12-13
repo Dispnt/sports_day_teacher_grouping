@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from waitress import serve
 
 app = Flask(__name__)
 CORS(app)
@@ -144,7 +145,7 @@ def get_enrolled_projects():
     try:
         name = request.args.get('name')  # 通过查询参数获取教工姓名
         team = request.args.get('team')  # 通过查询参数获取队伍名称
-        print(name,team)
+        print(f'{name}进行了查询请求')
         # 查询当前报名了哪些项目
         enrolled_projects = TeacherProjects.query.filter_by(teacher_name=name, team=team).all()
         # 构造项目列表
@@ -156,5 +157,11 @@ def get_enrolled_projects():
         return jsonify({'success': False, 'message': str(e)})
 
 
+# @app.route('/project/status', methods=['GET'])
+# def index():
+#     teacher_projects = TeacherProjects.query.all()
+#     return jsonify({'success': True, 'projects': teacher_projects})
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=80,debug=True)
+    serve(app, listen='*:80')
+    # app.run(host='0.0.0.0',port=80,debug=True)
